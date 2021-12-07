@@ -59,6 +59,12 @@ app.get("/set", (req, res) => {
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+});  
+
 function generateRandomString() {
   let result = '';
   characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
