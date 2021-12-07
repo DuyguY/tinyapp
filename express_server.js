@@ -65,6 +65,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     res.redirect("/urls");
 });  
 
+app.post("/urls/:id", (req, res) => {
+  const shortURL = req.params.id
+    urlDatabase[shortURL] = req.body.longURL
+    res.redirect("/urls");
+});  
+
 function generateRandomString() {
   let result = '';
   characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
