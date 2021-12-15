@@ -1,7 +1,8 @@
-const getUserByEmail = require("./helpers");
+const { generateRandomString, urlsForUser}
+= require("./helpers");
 const express = require("express");
 const app = express();
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const PORT = 8080;
 const bodyParser = require("body-parser");
@@ -26,7 +27,7 @@ const users = {
     email: "user2@example.com",
     password: bcrypt.hashSync("dishwasher-funk", 10)
   }
-}
+};
 
 app.set("view engine", "ejs");
 
@@ -40,45 +41,6 @@ const urlDatabase = {
     longURL: "https://www.google.ca",
     userID: "aJ48lW"
   }
-};
-
-//generate random string for shortURL
-function generateRandomString() {
-  let result = '';
-  characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  for (let i = 0; i < 6; i++) {
-    result += characters[Math.floor(Math.random() * characters.length)];
-  }
-  return result;
-}
-//to check the email is exist
-const searchingUserEmail = (email, users) => {
-  for (let userId in users) {
-    const user = users[userId];
-
-    if (user.email === email) {
-      return user;
-    }
-  }
-  return undefined;
-}
-// to user authentication
-const authenticateUser = (email, password, db) => {
-  const user = searchingUserEmail(email, db);
-  if (user && bcrypted.compareSync(password, user.password)) {
-    return user;
-  }
-  return false
-}
-//returns a object of filtered URLs based on the userID that is currently logged in
-const urlsForUser = (id, urlDatabase) => {
-  const userURLs = {};
-  for (const shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === id) {
-      userURLs[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return userURLs;
 };
 
 //to use url database
@@ -128,20 +90,22 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.session.user_id]
-
   }
   res.render("urls_show", templateVars);
 });
 
 //to redirect shortURL
 app.get("/u/:shortURL", (req, res) => {
-
-  if (urlDatabase[req.params.shortURL] === undefined) {
+  const longURL = urlDatabase[req.params.shortURL].longURL;
+  if (longURL === undefined) {
     res.send("<html><body> ERROR shortURL does not exist!</body></html>\n");
   }
-  res.redirect(urlDatabase[req.params.shortURL].longURL);
-
-})
+  if (longURL.startsWith('https://') || longURL.startsWith('http://')) {
+    res.redirect(urlDatabase[req.params.shortURL].longURL);
+  } else {
+    res.send("<html><body> Invalid URL! Please begin with http:// or https:// </body></html>\n");
+  }
+});
 
 //if the user is logged in, it will allow the user to create a tinyurl
 app.post("/urls", (req, res) => {
@@ -160,17 +124,18 @@ app.post("/urls", (req, res) => {
 //if the user is logged in and owns the tinyurl they can delete the tinyurl,
 //if the user is not logged in or doesnt own the url an error is thrown
 app.post("/urls/:id", (req, res) => {
-  let shortURL = req.params.id;
+  const shortURL = req.params.id;
   const userID = req.session.user_id;
   const newLongURL = req.body.longURL;
   urlDatabase[shortURL].longURL = newLongURL;
   urlDatabase[shortURL].userID = userID;
   res.redirect("/urls");
 });
+
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = req.session.user_id
-  const shortURL = req.params.shortURL
-  const URLobject = urlDatabase[shortURL]
+  const userID = req.session.user_id;
+  const shortURL = req.params.shortURL;
+  const URLobject = urlDatabase[shortURL];
   if (!URLobject) {
     return res.status(403).send("<html><body>URL not found!</body></html>\n");
   }
@@ -200,7 +165,7 @@ app.get("/register", (req, res) => {
   if (req.session.users_id !== undefined) {
     res.redirect('/urls');
   } else {
-    res.render("urls_registration", { user: null })
+    res.render("urls_registration", { user: null });
 
   }
 });
@@ -210,12 +175,12 @@ app.get("/register", (req, res) => {
 app.post('/login', (req, res) => {
   for (const index of Object.keys(users)) {
 
-    const user = users[index]
+    const user = users[index];
 
     if ((user.email === req.body.email) && (bcrypt.compareSync(req.body.password, user.password))) {
 
-      req.session.user_id = user.id
-      return res.redirect('/urls')
+      req.session.user_id = user.id;
+      return res.redirect('/urls');
     }
   }
   res.send("<html><body>Your email/password is wrong!</body></html>\n");
