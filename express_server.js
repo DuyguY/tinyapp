@@ -28,7 +28,6 @@ const users = {
   }
 }
 
-
 app.set("view engine", "ejs");
 
 // url database
@@ -129,20 +128,20 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.session.user_id]
-   
+
   }
   res.render("urls_show", templateVars);
 });
 
 //to redirect shortURL
- app.get("/u/:shortURL", (req, res) => {
+app.get("/u/:shortURL", (req, res) => {
 
   if (urlDatabase[req.params.shortURL] === undefined) {
     res.send("<html><body> ERROR shortURL does not exist!</body></html>\n");
-  } 
+  }
   res.redirect(urlDatabase[req.params.shortURL].longURL);
-  
-}) 
+
+})
 
 //if the user is logged in, it will allow the user to create a tinyurl
 app.post("/urls", (req, res) => {
@@ -159,8 +158,8 @@ app.post("/urls", (req, res) => {
 });
 
 //if the user is logged in and owns the tinyurl they can delete the tinyurl,
- //if the user is not logged in or doesnt own the url an error is thrown
- app.post("/urls/:id", (req, res) => {
+//if the user is not logged in or doesnt own the url an error is thrown
+app.post("/urls/:id", (req, res) => {
   let shortURL = req.params.id;
   const userID = req.session.user_id;
   const newLongURL = req.body.longURL;
@@ -168,7 +167,7 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL].userID = userID;
   res.redirect("/urls");
 });
- app.post("/urls/:shortURL/delete", (req, res) => {
+app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.user_id
   const shortURL = req.params.shortURL
   const URLobject = urlDatabase[shortURL]
@@ -244,7 +243,7 @@ app.post("/register", (req, res) => {
   }
 });
 
- //logs out of the app 
+//logs out of the app 
 app.post("/logout", (req, res) => {
   delete req.session.user_id;
   res.redirect("/urls");
