@@ -81,18 +81,26 @@ app.get("/urls/new", (req, res) => {
   if (userID) {
     res.render("urls_new", templateVars);
   } else {
-    res.redirect("/login");
+    
+    res.send("<html><body> Please login!</body></html>\n");
+    
   }
 });
+
 // return user's url
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.session.user_id]
-  }
-  res.render("urls_show", templateVars);
-});
+  const userId = req.session.user_id;
+  if (!userId) {
+    res.send("<html><body> Please login!</body></html>\n");
+  } else {
+    const templateVars = {
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL].longURL,
+      user: users[req.session.user_id]
+    }
+    res.render("urls_show", templateVars);
+  } 
+}); 
 
 //to redirect shortURL
 app.get("/u/:shortURL", (req, res) => {
